@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 
 import cl.thoorcito.nebulastore.domain.exception.ExceedsBuildVolumeException;
 import cl.thoorcito.nebulastore.domain.exception.InvalidQuantityException;
@@ -55,6 +56,16 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgument(IllegalArgumentException ex) {
         return build(HttpStatus.BAD_REQUEST, ex.getMessage());
+    }
+
+    
+    // Captura JSON mal formado, campos con tipo incorrecto, o numeros que
+    // desbordan el tipo esperado (ej: un int recibiendo un numero gigante).
+    // Ocurre a nivel de deserializacion, antes de que Bean Validation
+    // (@Valid) o tu logica de negocio siquiera se ejecuten.
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleMalformedJson(HttpMessageNotReadableException ex) {
+        return build(HttpStatus.BAD_REQUEST, "El cuerpo de la peticion es invalido o esta mal formado");
     }
 
     private ResponseEntity<ErrorResponse> build(HttpStatus status, String message) {
