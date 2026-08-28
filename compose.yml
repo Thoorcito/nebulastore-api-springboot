@@ -1,0 +1,15 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: nebulastore-postgres-db
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    environment:
+      POSTGRES_DB: ${DB_NAME:-nebulastore_db}
+      POSTGRES_USER: ${DB_USER:-nebulastore_user}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-nebulastore_pass}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data   # persiste los datos aunque el contenedor se borre
+
+volumes:
+  postgres_data:

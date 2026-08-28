@@ -1,0 +1,26 @@
+spring:
+  datasource:
+    # ${VARIABLE:valor_por_defecto} -> usa la variable de entorno si existe,
+    # si no, usa el valor por defecto. Asi el mismo yaml sirve en tu
+    # maquina y en la de un companero sin tener que editarlo.
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:nebulastore_db}
+    username: ${DB_USER:nebulastore_user}
+    password: ${DB_PASSWORD:SecureDevPassword123}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update      # crea/actualiza las tablas automaticamente segun las @Entity
+    show-sql: true          # imprime el SQL generado en consola, util para debuggear
+    properties:
+      hibernate.dialect: org.hibernate.dialect.PostgreSQLDialect
+
+springdoc:
+  api-docs:
+    path: /api-docs
+    enabled: true
+  swagger-ui:
+    path: /swagger-ui.html
+    enabled: true
+
+server:
+  port: ${SERVER_PORT:8080}

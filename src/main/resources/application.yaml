@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: nebulastore-api
+  profiles:
+    active: dev   # perfil por defecto en desarrollo local
+
+# Por defecto (sin perfil), Swagger queda apagado. El perfil "dev" lo
+# reactiva explicitamente abajo en application-dev.yaml.
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false

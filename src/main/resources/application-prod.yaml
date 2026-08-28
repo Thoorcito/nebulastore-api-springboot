@@ -1,0 +1,5 @@
+springdoc:
+  api-docs:
+    enabled: false   # bloquea la descarga del contrato OpenAPI
+  swagger-ui:
+    enabled: false    # la ruta /swagger-ui.html responde 404
