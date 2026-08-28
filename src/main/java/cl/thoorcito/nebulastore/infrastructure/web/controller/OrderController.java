@@ -11,10 +11,15 @@ import cl.thoorcito.nebulastore.application.service.OrderService;
 import cl.thoorcito.nebulastore.domain.model.Order;
 import cl.thoorcito.nebulastore.domain.model.OrderItem;
 import cl.thoorcito.nebulastore.infrastructure.web.dto.*;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/v1/orders")
+@Tag(name = "Orders", description = "Creacion y consulta de pedidos, con validacion de stock y dimensiones de impresion")
 public class OrderController {
 
     private final OrderService orderService;
@@ -23,11 +28,18 @@ public class OrderController {
         this.orderService = orderService;
     }
 
+    @Operation(summary = "Listar todos los pedidos")
+    @ApiResponses(value = { @ApiResponse(responseCode = "200", description = "Lista obtenida exitosamente") })
     @GetMapping
     public List<OrderResponseDto> getAllOrders() {
         return orderService.getAllOrders().stream().map(this::toResponseWithoutItems).toList();
     }
 
+    @Operation(summary = "Obtener pedido por ID", description = "Devuelve el pedido junto con sus items")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Pedido encontrado"),
+        @ApiResponse(responseCode = "404", description = "Pedido no encontrado")
+    })
     @GetMapping("/{id}")
     public ResponseEntity<OrderResponseDto> getOrderById(@PathVariable Long id) {
         Order order = orderService.getOrderById(id);
@@ -35,10 +47,15 @@ public class OrderController {
         return ResponseEntity.ok(toResponse(order, items));
     }
 
+    @Operation(summary = "Crear pedido", description = "Crea un pedido con uno o mas items, validando stock y dimensiones de impresion")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Pedido creado exitosamente"),
+        @ApiResponse(responseCode = "400", description = "Datos invalidos, cantidad invalida o dimensiones excedidas"),
+        @ApiResponse(responseCode = "404", description = "Producto no encontrado"),
+        @ApiResponse(responseCode = "422", description = "Stock insuficiente")
+    })
     @PostMapping
     public ResponseEntity<OrderResponseDto> createOrder(@Valid @RequestBody OrderRequestDto request) {
-        // Mapea el DTO web (con validaciones) al record interno de aplicacion
-        // (sin anotaciones de Spring) que espera el service.
         List<OrderItemRequest> itemRequests = request.items().stream()
                 .map(i -> new OrderItemRequest(i.productId(), i.quantity(),
                         i.dimensionX(), i.dimensionY(), i.dimensionZ()))
@@ -49,6 +66,11 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.CREATED).body(toResponse(created, items));
     }
 
+    @Operation(summary = "Listar items de un pedido")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Items obtenidos exitosamente"),
+        @ApiResponse(responseCode = "404", description = "Pedido no encontrado")
+    })
     @GetMapping("/{id}/items")
     public ResponseEntity<List<OrderItemResponseDto>> getOrderItems(@PathVariable Long id) {
         List<OrderItemResponseDto> items = orderService.getOrderItems(id).stream()
